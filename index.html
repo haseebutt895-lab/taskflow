@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f8fc">
+  <title>TaskFlow — Work, in good flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20233a;
+      --muted: #898ba0;
+      --line: #ececf3;
+      --paper: #fff;
+      --canvas: #f7f8fc;
+      --purple: #7866ed;
+      --purple-dark: #6653dc;
+      --purple-light: #f0edff;
+      --green: #28a77a;
+      --shadow: 0 8px 26px rgb(38 35 73 / 5%);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--canvas);
+      color: var(--ink);
+      font: 14px "DM Sans", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button, input, select, textarea { font: inherit; }
+    button { color: inherit; }
+    .app { display: flex; min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 4;
+      display: flex;
+      width: 246px;
+      flex-direction: column;
+      padding: 27px 17px 18px;
+      border-right: 1px solid var(--line);
+      background: var(--paper);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 0 11px;
+      color: var(--ink);
+      font: 800 20px Manrope, sans-serif;
+      letter-spacing: -.8px;
+    }
+    .brand-mark {
+      display: grid;
+      width: 33px;
+      height: 33px;
+      place-items: center;
+      border-radius: 11px;
+      background: linear-gradient(145deg, #8978ff, #6854df);
+      box-shadow: 0 5px 12px rgb(120 102 237 / 28%);
+    }
+    .brand-mark svg { width: 19px; }
+    .workspace-switch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 36px 0 27px;
+      padding: 11px 10px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      text-align: left;
+      background: white;
+      cursor: pointer;
+    }
+    .workspace-icon {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 9px;
+      color: #a45bcd;
+      background: #f8edff;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .workspace-label { flex: 1; }
+    .workspace-label strong, .workspace-label span { display: block; }
+    .workspace-label strong { font-size: 12px; }
+    .workspace-label span { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .section-label {
+      padding: 0 11px;
+      color: #a1a1b1;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.15px;
+      text-transform: uppercase;
+    }
+    .nav { display: grid; gap: 5px; margin: 12px 0 27px; }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 41px;
+      padding: 0 11px;
+      border: 0;
+      border-radius: 9px;
+      background: transparent;
+      color: #77798d;
+      text-align: left;
+      cursor: pointer;
+    }
+    .nav-link svg { width: 17px; height: 17px; }
+    .nav-link.active { background: var(--purple-light); color: var(--purple-dark); font-weight: 700; }
+    .nav-count {
+      display: grid;
+      min-width: 21px;
+      height: 21px;
+      place-items: center;
+      margin-left: auto;
+      border-radius: 7px;
+      background: #fff;
+      color: var(--purple-dark);
+      font-size: 10px;
+      font-weight: 700;
+    }
+    .project-list { display: grid; gap: 4px; margin: 12px 0 0; }
+    .project-link {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-height: 38px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: #77798d;
+      text-align: left;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .project-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .project-link small { margin-left: auto; color: #a4a4b3; font-size: 10px; }
+    .sidebar-bottom { margin-top: auto; }
+    .upgrade-card {
+      position: relative;
+      overflow: hidden;
+      margin: 12px 2px 20px;
+      padding: 17px 14px;
+      border-radius: 13px;
+      background: linear-gradient(140deg, #f3efff, #f8f6ff);
+    }
+    .upgrade-card::after {
+      position: absolute;
+      top: -25px;
+      right: -17px;
+      width: 76px;
+      height: 76px;
+      border: 12px solid rgb(120 102 237 / 9%);
+      border-radius: 50%;
+      content: "";
+    }
+    .upgrade-card strong { display: block; font-size: 12px; }
+    .upgrade-card p { margin: 7px 0 11px; color: #828198; font-size: 10px; line-height: 1.55; }
+    .upgrade-card button { padding: 0; border: 0; background: none; color: var(--purple-dark); font-size: 10px; font-weight: 700; cursor: pointer; }
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 8px 0;
+      border-top: 1px solid var(--line);
+    }
+    .avatar {
+      display: grid;
+      flex: 0 0 auto;
+      width: 31px;
+      height: 31px;
+      place-items: center;
+      border: 2px solid white;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+    }
+    .avatar.lg { width: 35px; height: 35px; font-size: 10px; }
+    .profile-info { flex: 1; }
+    .profile-info strong, .profile-info span { display: block; }
+    .profile-info strong { font-size: 11px; }
+    .profile-info span { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .icon-button {
+      display: grid;
+      width: 35px;
+      height: 35px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: white;
+      color: #77798d;
+      cursor: pointer;
+    }
+    .icon-button svg { width: 16px; height: 16px; }
+
+    .main { width: calc(100% - 246px); margin-left: 246px; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      display: flex;
+      height: 70px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 36px;
+      border-bottom: 1px solid var(--line);
+      background: rgb(255 255 255 / 91%);
+      backdrop-filter: blur(12px);
+    }
+    .breadcrumb { display: flex; align-items: center; gap: 9px; color: #9696a8; font-size: 12px; }
+    .breadcrumb strong { color: var(--ink); font-weight: 600; }
+    .top-actions { display: flex; align-items: center; gap: 12px; }
+    .search {
+      display: flex;
+      width: 211px;
+      height: 35px;
+      align-items: center;
+      gap: 8px;
+      padding: 0 11px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fff;
+      color: #a1a1b1;
+    }
+    .search svg { width: 15px; flex: 0 0 auto; }
+    .search input { width: 100%; border: 0; outline: 0; color: var(--ink); background: transparent; font-size: 11px; }
+    .search input::placeholder { color: #a1a1b1; }
+    .notification { position: relative; }
+    .notification::after {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      width: 6px;
+      height: 6px;
+      border: 1.5px solid white;
+      border-radius: 50%;
+      background: #ff7583;
+      content: "";
+    }
+    .content { max-width: 1570px; margin: auto; padding: 31px 36px 40px; }
+    .welcome-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 7px; font: 800 25px Manrope, sans-serif; letter-spacing: -.8px; }
+    .subtitle { margin: 0; color: var(--muted); font-size: 12px; }
+    .welcome-actions { display: flex; align-items: center; gap: 10px; }
+    .button {
+      display: inline-flex;
+      height: 37px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #fff;
+      color: #5e6076;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s, background .15s;
+    }
+    .button:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgb(33 30 71 / 8%); }
+    .button svg { width: 15px; height: 15px; }
+    .button-primary { border-color: var(--purple); background: var(--purple); color: white; }
+    .button-primary:hover { background: var(--purple-dark); }
+    .overview {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 15px;
+      margin: 25px 0 25px;
+    }
+    .stat-card {
+      display: flex;
+      min-height: 103px;
+      align-items: center;
+      gap: 13px;
+      padding: 17px;
+      border: 1px solid #efeff5;
+      border-radius: 13px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+    .stat-icon {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 12px;
+    }
+    .stat-icon svg { width: 19px; }
+    .stat-copy { min-width: 0; flex: 1; }
+    .stat-copy span, .stat-copy strong { display: block; }
+    .stat-copy span { margin-bottom: 4px; color: var(--muted); font-size: 10px; }
+    .stat-copy strong { font: 700 21px Manrope, sans-serif; letter-spacing: -.5px; }
+    .stat-note { display: block; margin-top: 4px; color: var(--green); font-size: 9px; }
+    .stat-note.neutral { color: #9595a9; }
+    .stats-completion { width: 35px; height: 35px; transform: rotate(-90deg); }
+    .board-heading { display: flex; align-items: center; justify-content: space-between; margin: 26px 0 14px; }
+    .board-heading h2 { margin: 0; font: 700 15px Manrope, sans-serif; }
+    .board-heading > div { display: flex; align-items: center; gap: 9px; }
+    .select-button { height: 32px; padding: 0 10px; font-size: 10px; }
+    .board-people { display: flex; align-items: center; padding-left: 7px; }
+    .board-people .avatar { margin-left: -7px; }
+    .add-person {
+      display: grid;
+      width: 29px;
+      height: 29px;
+      place-items: center;
+      margin-left: 4px;
+      border: 1px dashed #c9c4ee;
+      border-radius: 50%;
+      background: #f7f5ff;
+      color: var(--purple);
+      cursor: pointer;
+    }
+    .kanban {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      align-items: start;
+      gap: 14px;
+      overflow-x: auto;
+      padding: 2px 1px 14px;
+      scrollbar-width: thin;
+    }
+    .column {
+      min-height: 285px;
+      padding: 12px 11px 10px;
+      border: 1px solid #efeff5;
+      border-radius: 12px;
+      background: #f0f1f7;
+      transition: background .15s, border-color .15s;
+    }
+    .column.drag-over { border-color: #9c8ef5; background: #f0edff; }
+    .column-header { display: flex; align-items: center; gap: 8px; padding: 1px 2px 12px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .column-header h3 { margin: 0; font-size: 11px; font-weight: 700; }
+    .column-count { display: grid; min-width: 19px; height: 19px; place-items: center; border-radius: 6px; background: #e5e6ee; color: #77798d; font-size: 9px; }
+    .column-menu { margin-left: auto; border: 0; background: transparent; color: #9a9bae; cursor: pointer; letter-spacing: 2px; }
+    .task-list { display: grid; gap: 9px; min-height: 217px; }
+    .task-card {
+      padding: 13px 12px 10px;
+      border: 1px solid #eeeef4;
+      border-radius: 10px;
+      background: white;
+      box-shadow: 0 2px 7px rgb(41 37 78 / 3%);
+      cursor: grab;
+      transition: transform .15s, box-shadow .15s, opacity .15s;
+    }
+    .task-card:hover { transform: translateY(-2px); box-shadow: 0 7px 15px rgb(41 37 78 / 8%); }
+    .task-card.dragging { opacity: .43; transform: rotate(1deg); }
+    .task-tags { display: flex; align-items: center; justify-content: space-between; gap: 7px; margin-bottom: 9px; }
+    .tag { padding: 4px 7px; border-radius: 5px; font-size: 9px; font-weight: 600; }
+    .tag-design { color: #9266cb; background: #f4edff; }
+    .tag-product { color: #4084c9; background: #ebf4ff; }
+    .tag-marketing { color: #d58348; background: #fff2e8; }
+    .tag-research { color: #398e82; background: #e9f8f4; }
+    .priority { display: flex; align-items: center; gap: 4px; color: #898ba0; font-size: 9px; }
+    .priority i { width: 6px; height: 6px; border-radius: 50%; background: #aaa; }
+    .priority.high { color: #eb6d76; }
+    .priority.high i { background: #eb6d76; }
+    .priority.medium { color: #e7a543; }
+    .priority.medium i { background: #e7a543; }
+    .priority.low { color: #52a988; }
+    .priority.low i { background: #52a988; }
+    .task-card h4 { margin: 0 0 6px; font: 700 11px Manrope, sans-serif; line-height: 1.55; letter-spacing: -.1px; }
+    .task-description { margin: 0 0 10px; color: #9293a4; font-size: 9px; line-height: 1.55; }
+    .task-progress { margin: 10px 0 11px; }
+    .task-progress-label { display: flex; justify-content: space-between; margin-bottom: 5px; color: #85869a; font-size: 9px; }
+    .progress-track { height: 4px; overflow: hidden; border-radius: 9px; background: #eeedf4; }
+    .progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, #8b79f5, #6d5bdd); }
+    .task-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 9px; border-top: 1px solid #f1f1f5; }
+    .task-meta { display: flex; align-items: center; gap: 10px; color: #9293a4; font-size: 9px; }
+    .task-meta span { display: inline-flex; align-items: center; gap: 4px; }
+    .task-meta svg { width: 12px; height: 12px; }
+    .task-avatars { display: flex; padding-left: 5px; }
+    .task-avatars .avatar { width: 22px; height: 22px; margin-left: -5px; border-width: 1.5px; font-size: 7px; }
+    .column-add {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      gap: 7px;
+      margin-top: 9px;
+      padding: 9px 5px 3px;
+      border: 0;
+      background: transparent;
+      color: #8e8fa1;
+      text-align: left;
+      cursor: pointer;
+      font-size: 10px;
+    }
+    .bottom-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 15px; margin-top: 9px; }
+    .panel { padding: 16px 17px; border: 1px solid #efeff5; border-radius: 12px; background: white; box-shadow: var(--shadow); }
+    .panel-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .panel-heading h2 { margin: 0; font: 700 12px Manrope, sans-serif; }
+    .panel-heading button { padding: 0; border: 0; background: transparent; color: var(--purple-dark); cursor: pointer; font-size: 10px; font-weight: 600; }
+    .member-row { display: grid; grid-template-columns: minmax(120px, 1fr) 1.5fr 36px; align-items: center; gap: 12px; margin: 12px 0; }
+    .member-id { display: flex; align-items: center; gap: 8px; min-width: 0; }
+    .member-id div:last-child { min-width: 0; }
+    .member-id strong, .member-id span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .member-id strong { font-size: 10px; }
+    .member-id span { margin-top: 3px; color: var(--muted); font-size: 9px; }
+    .member-percent { color: #73748a; text-align: right; font-size: 10px; }
+    .activity-list { display: grid; gap: 14px; }
+    .activity-row { display: flex; align-items: flex-start; gap: 9px; }
+    .activity-row p { margin: 2px 0 0; color: #77798d; font-size: 10px; line-height: 1.5; }
+    .activity-row strong { color: var(--ink); font-weight: 600; }
+    .activity-time { display: block; margin-top: 3px; color: #a2a3b2; font-size: 9px; }
+    .empty-state { padding: 18px 5px; color: #9999ab; text-align: center; font-size: 10px; }
+    .review-section { margin: 10px 0 17px; padding: 17px; border: 1px solid #efeff5; border-radius: 12px; background: white; box-shadow: var(--shadow); }
+    .review-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+    .review-heading h2 { margin: 0; font: 700 13px Manrope, sans-serif; }
+    .review-heading p { margin: 4px 0 0; color: var(--muted); font-size: 10px; }
+    .review-count { display: grid; min-width: 24px; height: 24px; place-items: center; border-radius: 8px; background: var(--purple-light); color: var(--purple-dark); font-size: 10px; font-weight: 700; }
+    .review-list { display: grid; gap: 8px; }
+    .review-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px; padding: 12px; border: 1px solid #f0eff5; border-radius: 10px; background: #fdfdff; }
+    .review-task h3 { margin: 0 0 5px; font: 700 11px Manrope, sans-serif; }
+    .review-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: #898ba0; font-size: 9px; }
+    .review-actions { display: flex; align-items: center; gap: 7px; }
+    .review-actions .button { height: 30px; padding: 0 10px; font-size: 9px; }
+    .review-actions .approve-button { border-color: #d7eee3; color: #25845f; background: #f1faf5; }
+    .review-actions .approve-button:hover { background: #e6f6ed; }
+    .review-empty { padding: 16px 10px; border: 1px dashed #e5e3ef; border-radius: 10px; color: #898ba0; text-align: center; font-size: 10px; }
+    .page-footer {
+      display: grid;
+      grid-template-columns: minmax(200px, 1.5fr) repeat(2, minmax(120px, .75fr)) auto;
+      gap: 28px;
+      margin-top: 28px;
+      padding: 25px 20px 16px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: white;
+      box-shadow: var(--shadow);
+      color: #85869a;
+      font-size: 10px;
+    }
+    .footer-brandline { display: flex; align-items: center; gap: 8px; color: var(--ink); font: 800 14px Manrope, sans-serif; letter-spacing: -.4px; }
+    .footer-brandmark { display: grid; width: 25px; height: 25px; place-items: center; border-radius: 8px; background: var(--purple); color: white; font: 700 14px "DM Sans", sans-serif; }
+    .footer-description { max-width: 235px; margin: 10px 0 0; line-height: 1.6; }
+    .footer-column h2 { margin: 2px 0 11px; color: #55576e; font-size: 10px; font-weight: 700; }
+    .footer-links { display: grid; justify-items: start; gap: 8px; }
+    .footer-links button { padding: 0; border: 0; background: transparent; color: #85869a; cursor: pointer; font-size: 10px; text-align: left; }
+    .footer-links button:hover, .back-to-top:hover { color: var(--purple-dark); }
+    .footer-workspace { align-self: start; justify-self: end; padding: 10px 12px; border: 1px solid var(--line); border-radius: 9px; color: #77798d; line-height: 1.7; }
+    .footer-workspace strong { display: block; color: #55576e; font-size: 10px; }
+    .footer-bottom { display: flex; grid-column: 1 / -1; align-items: center; justify-content: space-between; gap: 12px; padding-top: 13px; border-top: 1px solid var(--line); }
+    .footer-message { margin: 0; }
+    .back-to-top { padding: 0; border: 0; background: transparent; color: var(--purple-dark); cursor: pointer; font-size: 10px; font-weight: 600; text-decoration: none; }
+    .toast {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 10;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: #28253f;
+      box-shadow: 0 8px 25px rgb(0 0 0 / 15%);
+      color: white;
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: .2s ease;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; padding: 20px; background: rgb(30 28 51 / 38%); backdrop-filter: blur(3px); }
+    .modal-backdrop.open { display: grid; }
+    .modal { width: min(440px, 100%); padding: 23px; border-radius: 15px; background: white; box-shadow: 0 20px 70px rgb(28 24 61 / 20%); }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 19px; }
+    .modal-header h2 { margin: 0; font: 700 17px Manrope, sans-serif; }
+    .modal-close { border: 0; background: transparent; color: #8f90a0; font-size: 21px; cursor: pointer; }
+    .form-grid { display: grid; gap: 13px; }
+    .form-field label { display: block; margin-bottom: 6px; color: #6f7083; font-size: 10px; font-weight: 600; }
+    .form-field input, .form-field select, .form-field textarea { width: 100%; min-height: 37px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; outline: none; background: white; color: var(--ink); font-size: 11px; }
+    .form-field input:focus, .form-field select:focus, .form-field textarea:focus { border-color: #a495fa; box-shadow: 0 0 0 3px #f0edff; }
+    .form-field textarea { min-height: 66px; resize: vertical; }
+    .form-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal-submit { width: 100%; margin-top: 17px; }
+    .scrim { display: none; }
+
+    @media (min-width: 1500px) {
+      .kanban { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 17px; }
+      .task-card { padding: 15px 14px 11px; }
+    }
+    @media (max-width: 1180px) {
+      .content { padding-right: 24px; padding-left: 24px; }
+      .topbar { padding-right: 24px; padding-left: 24px; }
+      .overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .kanban { grid-template-columns: repeat(4, minmax(215px, 1fr)); }
+    }
+    @media (max-width: 760px) {
+      .sidebar { width: 68px; align-items: center; padding: 20px 9px 14px; }
+      .brand { padding: 0; }
+      .brand-name, .workspace-switch, .section-label, .nav-link span, .nav-count, .project-link span:not(.project-dot), .project-link small, .upgrade-card, .profile-info, .profile > .icon-button { display: none; }
+      .nav { width: 100%; margin-top: 32px; }
+      .nav-link { justify-content: center; padding: 0; }
+      .nav-link svg { width: 19px; height: 19px; }
+      .project-list { justify-items: center; width: 100%; }
+      .project-link { justify-content: center; width: 100%; padding: 0; }
+      .project-dot { width: 9px; height: 9px; }
+      .sidebar-bottom { width: 100%; }
+      .profile { justify-content: center; padding: 12px 0 0; }
+      .main { width: calc(100% - 68px); margin-left: 68px; }
+      .topbar { height: 60px; padding: 0 16px; }
+      .search { width: 160px; }
+      .content { padding: 23px 16px 30px; }
+      .bottom-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      .topbar { padding: 0 12px; }
+      .breadcrumb { font-size: 10px; }
+      .top-actions { gap: 7px; }
+      .search { width: 35px; height: 35px; justify-content: center; padding: 0; }
+      .search input { display: none; }
+      .content { padding-right: 12px; padding-left: 12px; }
+      .welcome-row { flex-direction: column; }
+      h1 { font-size: 22px; }
+      .overview { gap: 9px; margin: 19px 0; }
+      .stat-card { min-height: 85px; gap: 9px; padding: 11px 9px; }
+      .stat-icon { width: 32px; height: 32px; border-radius: 9px; }
+      .stat-copy strong { font-size: 18px; }
+      .stat-note { font-size: 8px; }
+      .board-heading { align-items: flex-start; gap: 9px; }
+      .board-heading > div { flex-wrap: wrap; justify-content: flex-end; }
+      .board-people { display: none; }
+      .select-button { height: 30px; padding: 0 7px; }
+      .kanban { grid-template-columns: repeat(4, minmax(200px, 1fr)); }
+      .review-item { grid-template-columns: 1fr; gap: 10px; }
+      .review-actions .button { flex: 1; }
+      .page-footer { grid-template-columns: 1fr 1fr; gap: 20px; padding: 19px 15px 13px; }
+      .footer-brand-section { grid-column: 1 / -1; }
+      .footer-workspace { justify-self: start; }
+      .footer-bottom { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <a class="brand" href="#" aria-label="TaskFlow home">
+        <span class="brand-mark"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12.5 9.2 17 19 7" stroke="white" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 5.2h5" stroke="white" stroke-width="2.2" stroke-linecap="round" opacity=".65"/></svg></span>
+        <span class="brand-name">taskflow</span>
+      </a>
+      <button class="workspace-switch" id="workspaceButton" aria-label="Switch workspace">
+        <span class="workspace-icon">S</span>
+        <span class="workspace-label"><strong>Studio North</strong><span>5 members · 4 projects</span></span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="m7 10 5 5 5-5" stroke="#9696a8" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+      <div class="section-label">Workspace</div>
+      <nav class="nav" aria-label="Main navigation">
+        <button class="nav-link" data-nav="Overview"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg><span>Overview</span></button>
+        <button class="nav-link active" data-nav="My tasks"><svg viewBox="0 0 24 24" fill="none"><path d="M9 5h10M9 12h10M9 19h10M4.5 5h.01M4.5 12h.01M4.5 19h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>My tasks</span><span class="nav-count" id="myTaskCount">4</span></button>
+        <button class="nav-link" data-nav="Calendar"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" stroke-width="1.7"/><path d="M7 3v4m10-4v4M3 10h18" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><span>Calendar</span></button>
+        <button class="nav-link" data-nav="Messages"><svg viewBox="0 0 24 24" fill="none"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.1A7.5 7.5 0 1 1 20 11.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>Messages</span><span class="nav-count">3</span></button>
+      </nav>
+      <div class="section-label">Your projects</div>
+      <div class="project-list">
+        <div id="projectListItems"></div>
+        <button class="project-link" id="addProject"><span style="font-size:16px">+</span><span>Add project</span></button>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="upgrade-card"><strong>A little more room?</strong><p>Bring your whole team together with unlimited projects.</p><button id="upgradeButton">Explore plans <span aria-hidden="true">→</span></button></div>
+        <div class="profile">
+          <div class="avatar" style="background:linear-gradient(135deg,#e99279,#b85772)">AM</div>
+          <div class="profile-info"><strong>Alex Morgan</strong><span>Product designer</span></div>
+          <button class="icon-button" aria-label="Account settings"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.7"/><path d="m19.4 15 .1.1 1.3 1-1.3 2.2-1.6-.6a7.9 7.9 0 0 1-1.5.9l-.3 1.7h-2.6l-.3-1.7a7.9 7.9 0 0 1-1.5-.9l-1.6.6-1.3-2.2 1.3-1a7.3 7.3 0 0 1 0-1.8l-1.3-1 1.3-2.2 1.6.6a7.9 7.9 0 0 1 1.5-.9l.3-1.7h2.6l.3 1.7a7.9 7.9 0 0 1 1.5.9l1.6-.6 1.3 2.2-1.3 1a7.3 7.3 0 0 1 0 1.8Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb"><span>Workspace</span><span aria-hidden="true">/</span><strong id="breadcrumbCurrent">My tasks</strong></div>
+        <div class="top-actions">
+          <label class="search"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8" stroke="currentColor" stroke-width="1.8"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input id="searchInput" type="search" placeholder="Search tasks..." aria-label="Search tasks"></label>
+          <button class="icon-button notification" id="notificationButton" aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9m-8 12h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="avatar lg" style="background:linear-gradient(135deg,#e99279,#b85772);cursor:pointer" aria-label="Your profile">AM</button>
+        </div>
+      </header>
+      <div class="content">
+        <section class="welcome-row">
+          <div><h1>Good morning, Alex <span aria-hidden="true">✦</span></h1><p class="subtitle">Here’s what’s happening with your projects today.</p></div>
+          <div class="welcome-actions">
+            <button class="button" id="inviteButton"><svg viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m6-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8-3v6m3-3h-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Invite team</button>
+            <button class="button button-primary" id="newTaskButton"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14m-7-7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>New task</button>
+          </div>
+        </section>
+
+        <section class="overview" aria-label="Task overview">
+          <article class="stat-card">
+            <div class="stat-icon" style="background:#f0edff;color:#7966ed"><svg viewBox="0 0 24 24" fill="none"><path d="M9 5h10M9 12h10M9 19h10M4.5 5h.01M4.5 12h.01M4.5 19h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
+            <div class="stat-copy"><span>Total tasks</span><strong id="totalTasks">12</strong><small class="stat-note neutral">In this workspace</small></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon" style="background:#fff3e7;color:#e3a34e"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 7v5l3 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="stat-copy"><span>In progress</span><strong id="inProgressTasks">4</strong><small class="stat-note neutral">Across 4 projects</small></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon" style="background:#eaf8f1;color:#39a77c"><svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4.5 4.5L19 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="stat-copy"><span>Completed</span><strong id="completedTasks">2</strong><small class="stat-note neutral">In this workspace</small></div>
+          </article>
+          <article class="stat-card">
+            <div class="stat-icon" style="background:#fff0f1;color:#eb7885"><svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5m0 4h.01M10.3 4.9 2.8 18a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3l-7.5-13.1a2 2 0 0 0-3.4 0Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="stat-copy"><span>Due this week</span><strong id="dueThisWeek">8</strong><small class="stat-note neutral" id="highPriorityDue">3 high priority</small></div>
+          </article>
+        </section>
+
+        <section aria-label="Kanban board">
+          <div class="board-heading">
+            <h2 id="boardTitle">My tasks</h2>
+            <div>
+              <div class="board-people" aria-label="Team members">
+                <span class="avatar" style="background:#edb19c" title="Sophie Lee">SL</span><span class="avatar" style="background:#77a9a0" title="Jordan Kim">JK</span><span class="avatar" style="background:#7488c7" title="Taylor Reed">TR</span><span class="avatar" style="background:#d59b60" title="Sam Patel">SP</span>
+              </div>
+              <button class="add-person" id="addMemberButton" aria-label="Add team member" title="Add team member">+</button>
+              <button class="button select-button" id="filterButton" aria-label="Filter by priority">All priorities <span>⌄</span></button>
+              <button class="button select-button" id="sortButton">↕ <span>Sort</span></button>
+            </div>
+          </div>
+          <div class="kanban" id="kanban">
+            <section class="column" data-status="todo">
+              <header class="column-header"><span class="status-dot" style="background:#9295a9"></span><h3>To do</h3><span class="column-count">0</span><button class="column-menu" aria-label="To do options">···</button></header>
+              <div class="task-list"></div><button class="column-add" data-add-status="todo"><span>＋</span> Add a task</button>
+            </section>
+            <section class="column" data-status="progress">
+              <header class="column-header"><span class="status-dot" style="background:#e3a34e"></span><h3>In progress</h3><span class="column-count">0</span><button class="column-menu" aria-label="In progress options">···</button></header>
+              <div class="task-list"></div><button class="column-add" data-add-status="progress"><span>＋</span> Add a task</button>
+            </section>
+            <section class="column" data-status="review">
+              <header class="column-header"><span class="status-dot" style="background:#8c76ed"></span><h3>In review</h3><span class="column-count">0</span><button class="column-menu" aria-label="In review options">···</button></header>
+              <div class="task-list"></div><button class="column-add" data-add-status="review"><span>＋</span> Add a task</button>
+            </section>
+            <section class="column" data-status="done">
+              <header class="column-header"><span class="status-dot" style="background:#43ad80"></span><h3>Done</h3><span class="column-count">0</span><button class="column-menu" aria-label="Done options">···</button></header>
+              <div class="task-list"></div><button class="column-add" data-add-status="done"><span>＋</span> Add a task</button>
+            </section>
+          </div>
+        </section>
+
+        <section class="review-section" aria-labelledby="reviewHeading">
+          <header class="review-heading">
+            <div><h2 id="reviewHeading">Ready for review</h2><p>Review submitted work and keep projects moving.</p></div>
+            <span class="review-count" id="reviewCount" aria-label="Tasks awaiting review">0</span>
+          </header>
+          <div class="review-list" id="reviewList" aria-live="polite"></div>
+        </section>
+
+        <section class="bottom-grid">
+          <article class="panel">
+            <div class="panel-heading"><h2>Team progress</h2><button id="teamDetailsButton">View all <span aria-hidden="true">→</span></button></div>
+            <div class="member-row"><div class="member-id"><div class="avatar" style="background:#edb19c">SL</div><div><strong>Sophie Lee</strong><span>Product designer</span></div></div><div class="progress-track"><div class="progress-fill" style="width:82%;background:#8774f3"></div></div><div class="member-percent">82%</div></div>
+            <div class="member-row"><div class="member-id"><div class="avatar" style="background:#77a9a0">JK</div><div><strong>Jordan Kim</strong><span>Frontend developer</span></div></div><div class="progress-track"><div class="progress-fill" style="width:67%;background:#54b5a0"></div></div><div class="member-percent">67%</div></div>
+            <div class="member-row"><div class="member-id"><div class="avatar" style="background:#7488c7">TR</div><div><strong>Taylor Reed</strong><span>Product manager</span></div></div><div class="progress-track"><div class="progress-fill" style="width:54%;background:#69a6dc"></div></div><div class="member-percent">54%</div></div>
+          </article>
+          <article class="panel">
+            <div class="panel-heading"><h2>Team activity</h2><button id="activityButton">See all <span aria-hidden="true">→</span></button></div>
+            <div class="activity-list">
+              <div class="activity-row"><div class="avatar" style="background:#edb19c">SL</div><p><strong>Sophie Lee</strong> completed <strong>Homepage wireframes</strong><span class="activity-time">12 min ago</span></p></div>
+              <div class="activity-row"><div class="avatar" style="background:#77a9a0">JK</div><p><strong>Jordan Kim</strong> moved <strong>API integration</strong> to review<span class="activity-time">48 min ago</span></p></div>
+              <div class="activity-row"><div class="avatar" style="background:#7488c7">TR</div><p><strong>Taylor Reed</strong> left a comment on <strong>Mobile app flow</strong><span class="activity-time">2 hours ago</span></p></div>
+            </div>
+          </article>
+        </section>
+        <footer class="page-footer">
+          <section class="footer-brand-section">
+            <div class="footer-brandline"><span class="footer-brandmark" aria-hidden="true">✓</span>taskflow</div>
+            <p class="footer-description">A calmer way to plan, track, and get great work done together.</p>
+          </section>
+          <section class="footer-column" aria-label="Workspace navigation">
+            <h2>Workspace</h2>
+            <div class="footer-links">
+              <button data-footer-nav="Overview">Overview</button>
+              <button data-footer-nav="My tasks">My tasks</button>
+              <button data-footer-nav="Calendar">Upcoming tasks</button>
+              <button data-footer-nav="Messages">Team activity</button>
+            </div>
+          </section>
+          <section class="footer-column" aria-label="Workspace details">
+            <h2>Studio North</h2>
+            <div class="footer-links">
+              <button id="footerProjectsLink">Your projects</button>
+              <button id="footerInviteLink">Invite your team</button>
+            </div>
+          </section>
+          <aside class="footer-workspace"><strong>Workspace snapshot</strong><span>5 team members</span><br><span><span id="footerProjectCount">4</span> projects · <span id="footerTaskCount">12</span> tasks</span></aside>
+          <div class="footer-bottom">
+            <p class="footer-message">© <span id="copyrightYear">2026</span> TaskFlow. Made for teams that love a good flow.</p>
+            <button class="back-to-top" id="backToTop">Back to top ↑</button>
+          </div>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="modal-backdrop" id="taskModalBackdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header class="modal-header"><h2 id="modalTitle">Create a task</h2><button class="modal-close" id="modalClose" aria-label="Close dialog">×</button></header>
+      <form id="taskForm">
+        <div class="form-grid">
+          <div class="form-field"><label for="taskTitle">Task name</label><input id="taskTitle" name="title" placeholder="What needs to get done?" required maxlength="90"></div>
+          <div class="form-field"><label for="taskDescription">Description <span style="font-weight:400;color:#a1a1b1">(optional)</span></label><textarea id="taskDescription" name="description" placeholder="Add a few details..."></textarea></div>
+          <div class="form-pair">
+            <div class="form-field"><label for="taskPriority">Priority</label><select id="taskPriority" name="priority"><option value="medium">Medium</option><option value="high">High</option><option value="low">Low</option></select></div>
+            <div class="form-field"><label for="taskStatus">Status</label><select id="taskStatus" name="status"><option value="todo">To do</option><option value="progress">In progress</option><option value="review">In review</option><option value="done">Done</option></select></div>
+          </div>
+          <div class="form-field"><label for="taskProject">Project</label><select id="taskProject" name="project"><option>Website redesign</option><option>Mobile app</option><option>Brand identity</option><option>Marketing</option></select></div>
+        </div>
+        <button class="button button-primary modal-submit" type="submit">Create task</button>
+      </form>
+    </section>
+  </div>
+  <div class="modal-backdrop" id="projectModalBackdrop" role="presentation">
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="projectModalTitle">
+      <header class="modal-header"><h2 id="projectModalTitle">Create a project</h2><button class="modal-close" id="projectModalClose" aria-label="Close dialog">×</button></header>
+      <form id="projectForm">
+        <div class="form-grid">
+          <div class="form-field"><label for="projectName">Project name</label><input id="projectName" name="name" placeholder="e.g. Customer research" required maxlength="50"></div>
+          <div class="form-field"><label for="projectCategory">Project category</label><select id="projectCategory" name="category"><option value="Design">Design</option><option value="Product">Product</option><option value="Marketing">Marketing</option><option value="Research">Research</option></select></div>
+        </div>
+        <button class="button button-primary modal-submit" type="submit">Create project</button>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    (() => {
+      const palette = {
+        "Sophie Lee": ["SL", "#edb19c"],
+        "Jordan Kim": ["JK", "#77a9a0"],
+        "Taylor Reed": ["TR", "#7488c7"],
+        "Sam Patel": ["SP", "#d59b60"],
+        "Alex Morgan": ["AM", "linear-gradient(135deg,#e99279,#b85772)"]
+      };
+      let nextId = 25;
+      let activePriority = "all";
+      let searchTerm = "";
+      let selectedProject = null;
+      let currentView = "My tasks";
+      let draggingId = null;
+      const projects = [
+        { name: "Website redesign", color: "#8c76f4", category: "Design" },
+        { name: "Mobile app", color: "#4ea8c7", category: "Product" },
+        { name: "Brand identity", color: "#e8a65a", category: "Design" },
+        { name: "Marketing", color: "#e77b91", category: "Marketing" }
+      ];
+      const tasks = [
+        { id: 1, title: "Design homepage hero section", description: "Explore a fresh direction for the new landing page.", category: "Design", project: "Website redesign", priority: "high", status: "progress", due: "Today", comments: 4, files: 2, progress: 68, assignees: ["Sophie Lee", "Alex Morgan"] },
+        { id: 2, title: "Create onboarding illustrations", description: "", category: "Design", project: "Mobile app", priority: "medium", status: "progress", due: "Nov 05", comments: 2, files: 0, progress: 42, assignees: ["Sophie Lee"] },
+        { id: 3, title: "Review competitor websites", description: "", category: "Research", project: "Website redesign", priority: "low", status: "todo", due: "Nov 07", comments: 1, files: 3, progress: 0, assignees: ["Taylor Reed"] },
+        { id: 4, title: "Gather customer feedback", description: "Pull together the latest interview notes.", category: "Research", project: "Mobile app", priority: "medium", status: "todo", due: "Nov 08", comments: 3, files: 1, progress: 0, assignees: ["Jordan Kim", "Taylor Reed"] },
+        { id: 5, title: "Define color palette", description: "", category: "Design", project: "Brand identity", priority: "high", status: "todo", due: "Nov 09", comments: 0, files: 2, progress: 0, assignees: ["Alex Morgan"] },
+        { id: 6, title: "Set up API integration", description: "Connect the product endpoints to staging.", category: "Product", project: "Mobile app", priority: "high", status: "review", due: "Today", comments: 6, files: 1, progress: 100, assignees: ["Jordan Kim"] },
+        { id: 7, title: "Update pricing page copy", description: "", category: "Marketing", project: "Marketing", priority: "medium", status: "progress", due: "Nov 04", comments: 2, files: 0, progress: 75, assignees: ["Taylor Reed"] },
+        { id: 8, title: "Map user journey", description: "", category: "Product", project: "Website redesign", priority: "medium", status: "review", due: "Nov 06", comments: 3, files: 2, progress: 100, assignees: ["Sophie Lee", "Taylor Reed"] },
+        { id: 9, title: "Write product launch brief", description: "", category: "Marketing", project: "Marketing", priority: "low", status: "done", due: "Yesterday", comments: 2, files: 1, progress: 100, assignees: ["Sam Patel"] },
+        { id: 10, title: "Build design system buttons", description: "Add button states and tokens to the shared library.", category: "Design", project: "Website redesign", priority: "high", status: "progress", due: "Nov 06", comments: 5, files: 4, progress: 55, assignees: ["Sophie Lee", "Jordan Kim"] },
+        { id: 11, title: "Mobile app user flow", description: "", category: "Product", project: "Mobile app", priority: "medium", status: "todo", due: "Nov 10", comments: 3, files: 2, progress: 0, assignees: ["Taylor Reed", "Alex Morgan"] },
+        { id: 12, title: "Finalize brand guidelines", description: "", category: "Design", project: "Brand identity", priority: "low", status: "done", due: "Oct 31", comments: 1, files: 3, progress: 100, assignees: ["Alex Morgan"] }
+      ];
+
+      const esc = value => String(value).replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
+      const toast = document.getElementById("toast");
+      let toastTimer;
+      function notify(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+      }
+
+      function avatarMarkup(name) {
+        const [initials, color] = palette[name] || [name.split(/\s+/).map(part => part[0]).join("").slice(0, 2).toUpperCase(), "#8274d8"];
+        return `<span class="avatar" title="${esc(name)}" style="background:${color}">${esc(initials)}</span>`;
+      }
+
+      function matchesBoardFilters(task) {
+        const matchesSearch = `${task.title} ${task.description} ${task.category} ${task.project}`.toLowerCase().includes(searchTerm);
+        const matchesPriority = activePriority === "all" || task.priority === activePriority;
+        const matchesProject = !selectedProject || task.project === selectedProject;
+        const matchesView = currentView === "My tasks"
+          ? task.assignees.includes("Alex Morgan")
+          : currentView !== "Messages" || task.comments > 0;
+        const matchesCalendar = currentView !== "Calendar" || (task.status !== "done" && ["Today", "Nov 04", "Nov 05", "Nov 06", "Nov 07", "Nov 08"].includes(task.due));
+        return matchesSearch && matchesPriority && matchesProject && matchesView && matchesCalendar;
+      }
+
+      function renderProjects() {
+        const list = document.getElementById("projectListItems");
+        list.innerHTML = projects.map(project => {
+          const count = tasks.filter(task => task.project === project.name).length;
+          return `<button class="project-link" data-project="${esc(project.name)}" aria-pressed="${selectedProject === project.name}"><span class="project-dot" style="background:${esc(project.color)}"></span><span>${esc(project.name)}</span><small>${count}</small></button>`;
+        }).join("");
+        list.querySelectorAll("[data-project]").forEach(button => button.addEventListener("click", () => {
+          selectedProject = button.dataset.project;
+          currentView = "Overview";
+          searchTerm = "";
+          document.getElementById("searchInput").value = "";
+          document.querySelectorAll(".nav-link").forEach(link => link.classList.toggle("active", link.dataset.nav === "Overview"));
+          document.getElementById("breadcrumbCurrent").textContent = selectedProject;
+          render();
+        }));
+        const projectSelect = document.getElementById("taskProject");
+        projectSelect.innerHTML = projects.map(project => `<option>${esc(project.name)}</option>`).join("");
+      }
+
+      function renderReviews() {
+        const reviews = tasks.filter(task => task.status === "review");
+        document.getElementById("reviewCount").textContent = reviews.length;
+        const list = document.getElementById("reviewList");
+        if (!reviews.length) {
+          list.innerHTML = '<div class="review-empty">You’re all caught up — no tasks are waiting for review.</div>';
+          return;
+        }
+        list.innerHTML = reviews.map(task => `<article class="review-item" data-review-id="${task.id}">
+          <div class="review-task">
+            <h3>${esc(task.title)}</h3>
+            <div class="review-meta"><span>${esc(task.project)}</span><span aria-hidden="true">·</span><span>Submitted by ${esc(task.assignees[0] || "Team member")}</span><span aria-hidden="true">·</span><span>Due ${esc(task.due)}</span><span class="priority ${esc(task.priority)}"><i></i>${esc(task.priority[0].toUpperCase() + task.priority.slice(1))} priority</span></div>
+          </div>
+          <div class="review-actions"><button class="button" data-review-action="changes" data-task-id="${task.id}">Request changes</button><button class="button approve-button" data-review-action="approve" data-task-id="${task.id}">✓ Approve</button></div>
+        </article>`).join("");
+      }
+
+      function cardMarkup(task) {
+        const categoryClass = `tag-${task.category.toLowerCase()}`;
+        const progress = Number(task.progress) || 0;
+        return `<article class="task-card" draggable="true" tabindex="0" data-id="${task.id}" aria-label="${esc(task.title)}">
+          <div class="task-tags"><span class="tag ${categoryClass}">${esc(task.category)}</span><span class="priority ${esc(task.priority)}"><i></i>${esc(task.priority[0].toUpperCase() + task.priority.slice(1))}</span></div>
+          <h4>${esc(task.title)}</h4>${task.description ? `<p class="task-description">${esc(task.description)}</p>` : ""}
+          ${task.status !== "todo" ? `<div class="task-progress"><div class="task-progress-label"><span>Progress</span><span>${progress}%</span></div><div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div></div>` : ""}
+          <div class="task-footer"><div class="task-meta"><span><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M7 3v4m10-4v4M3 10h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>${esc(task.due)}</span>${task.comments ? `<span><svg viewBox="0 0 24 24" fill="none"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l1.8-3.1A7.5 7.5 0 1 1 20 11.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>${task.comments}</span>` : ""}${task.files ? `<span><svg viewBox="0 0 24 24" fill="none"><path d="m8 12.5 6.7-6.7a3 3 0 0 1 4.3 4.3l-8.5 8.5a5 5 0 0 1-7.1-7.1L12 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>${task.files}</span>` : ""}</div><div class="task-avatars">${task.assignees.slice(0, 3).map(avatarMarkup).join("")}</div></div>
+        </article>`;
+      }
+
+      function render() {
+        document.querySelectorAll(".column").forEach(column => {
+          const status = column.dataset.status;
+          const filtered = tasks.filter(task => task.status === status && matchesBoardFilters(task));
+          column.querySelector(".task-list").innerHTML = filtered.length ? filtered.map(cardMarkup).join("") : `<div class="empty-state">${searchTerm || activePriority !== "all" || selectedProject || currentView !== "Overview" ? "No matching tasks" : "Drop a task here"}</div>`;
+          column.querySelector(".column-count").textContent = filtered.length;
+        });
+        const inProgressCount = tasks.filter(task => task.status === "progress").length;
+        const completedCount = tasks.filter(task => task.status === "done").length;
+        const dueSoon = tasks.filter(task => task.status !== "done" && ["Today", "Nov 04", "Nov 05", "Nov 06", "Nov 07", "Nov 08"].includes(task.due));
+        document.getElementById("inProgressTasks").textContent = inProgressCount;
+        document.getElementById("completedTasks").textContent = completedCount;
+        document.getElementById("totalTasks").textContent = tasks.length;
+        document.getElementById("dueThisWeek").textContent = dueSoon.length;
+        document.getElementById("highPriorityDue").textContent = `${dueSoon.filter(task => task.priority === "high").length} high priority`;
+        document.getElementById("myTaskCount").textContent = tasks.filter(task => task.assignees.includes("Alex Morgan")).length;
+        document.getElementById("boardTitle").textContent = selectedProject || ({ Overview: "Project board", "My tasks": "My tasks", Calendar: "Upcoming tasks", Messages: "Tasks with comments" }[currentView]);
+        document.getElementById("footerProjectCount").textContent = projects.length;
+        document.getElementById("footerTaskCount").textContent = tasks.length;
+        renderProjects();
+        renderReviews();
+        document.querySelectorAll(".task-card").forEach(card => {
+          card.addEventListener("dragstart", event => {
+            draggingId = Number(card.dataset.id);
+            card.classList.add("dragging");
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("text/plain", String(draggingId));
+          });
+          card.addEventListener("dragend", () => {
+            draggingId = null;
+            card.classList.remove("dragging");
+            document.querySelectorAll(".column").forEach(item => item.classList.remove("drag-over"));
+          });
+          card.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              const status = taskStatusOrder[(taskStatusOrder.indexOf(tasks.find(task => task.id === Number(card.dataset.id)).status) + 1) % taskStatusOrder.length];
+              moveTask(Number(card.dataset.id), status);
+            }
+          });
+        });
+      }
+
+      const taskStatusOrder = ["todo", "progress", "review", "done"];
+      function moveTask(id, status) {
+        const task = tasks.find(item => item.id === id);
+        if (!task || task.status === status) return;
+        task.status = status;
+        if (status === "done") task.progress = 100;
+        if (status === "progress" && task.progress === 0) task.progress = 20;
+        render();
+        const label = { todo: "To do", progress: "In progress", review: "In review", done: "Done" }[status];
+        notify(`“${task.title}” moved to ${label}`);
+      }
+
+      document.getElementById("reviewList").addEventListener("click", event => {
+        const button = event.target.closest("[data-review-action]");
+        if (!button) return;
+        const task = tasks.find(item => item.id === Number(button.dataset.taskId));
+        if (!task || task.status !== "review") return;
+        const approved = button.dataset.reviewAction === "approve";
+        task.status = approved ? "done" : "progress";
+        task.progress = approved ? 100 : Math.min(task.progress, 80);
+        render();
+        notify(approved ? `“${task.title}” approved` : `Changes requested for “${task.title}”`);
+      });
+
+      document.querySelectorAll(".column").forEach(column => {
+        column.addEventListener("dragover", event => {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+          column.classList.add("drag-over");
+        });
+        column.addEventListener("dragleave", event => {
+          if (!column.contains(event.relatedTarget)) column.classList.remove("drag-over");
+        });
+        column.addEventListener("drop", event => {
+          event.preventDefault();
+          column.classList.remove("drag-over");
+          const id = Number(event.dataTransfer.getData("text/plain")) || draggingId;
+          if (id) moveTask(id, column.dataset.status);
+        });
+      });
+
+      const backdrop = document.getElementById("taskModalBackdrop");
+      const form = document.getElementById("taskForm");
+      function openModal(status = "todo") {
+        form.reset();
+        document.getElementById("taskStatus").value = status;
+        backdrop.classList.add("open");
+        requestAnimationFrame(() => document.getElementById("taskTitle").focus());
+      }
+      function closeModal() { backdrop.classList.remove("open"); }
+      document.getElementById("newTaskButton").addEventListener("click", () => openModal());
+      document.querySelectorAll(".column-add").forEach(button => button.addEventListener("click", () => openModal(button.dataset.addStatus)));
+      document.getElementById("modalClose").addEventListener("click", closeModal);
+      backdrop.addEventListener("click", event => { if (event.target === backdrop) closeModal(); });
+      document.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
+      form.addEventListener("submit", event => {
+        event.preventDefault();
+        const data = new FormData(form);
+        const title = String(data.get("title")).trim();
+        if (!title) return;
+        tasks.unshift({
+          id: nextId++, title, description: String(data.get("description")).trim(),
+          category: projects.find(project => project.name === data.get("project")).category,
+          project: data.get("project"), priority: data.get("priority"), status: data.get("status"),
+          due: "Nov 10", comments: 0, files: 0,
+          progress: data.get("status") === "done" ? 100 : data.get("status") === "progress" ? 10 : 0,
+          assignees: ["Alex Morgan"]
+        });
+        render();
+        closeModal();
+        notify("Your task has been added");
+      });
+
+      document.getElementById("searchInput").addEventListener("input", event => {
+        searchTerm = event.target.value.trim().toLowerCase();
+        render();
+      });
+      document.getElementById("filterButton").addEventListener("click", event => {
+        const choices = ["all", "high", "medium", "low"];
+        const current = choices.indexOf(activePriority);
+        activePriority = choices[(current + 1) % choices.length];
+        event.currentTarget.innerHTML = `${activePriority === "all" ? "All priorities" : `${activePriority[0].toUpperCase()}${activePriority.slice(1)} priority`} <span>⌄</span>`;
+        render();
+      });
+      let sortAscending = true;
+      document.getElementById("sortButton").addEventListener("click", () => {
+        tasks.reverse();
+        sortAscending = !sortAscending;
+        document.getElementById("sortButton").innerHTML = `${sortAscending ? "↕" : "↕"} <span>${sortAscending ? "Sort" : "Reversed"}</span>`;
+        render();
+        notify(sortAscending ? "Tasks returned to their original order" : "Tasks reversed");
+      });
+
+      document.querySelectorAll(".nav-link").forEach(button => button.addEventListener("click", () => {
+        currentView = button.dataset.nav;
+        selectedProject = null;
+        searchTerm = "";
+        document.getElementById("searchInput").value = "";
+        document.querySelectorAll(".nav-link").forEach(link => link.classList.remove("active"));
+        button.classList.add("active");
+        document.getElementById("breadcrumbCurrent").textContent = button.dataset.nav;
+        render();
+      }));
+      document.getElementById("workspaceButton").addEventListener("click", () => {
+        const count = tasks.length;
+        notify(`Studio North · 5 members · ${projects.length} projects · ${count} tasks`);
+      });
+      const projectBackdrop = document.getElementById("projectModalBackdrop");
+      const projectForm = document.getElementById("projectForm");
+      document.getElementById("addProject").addEventListener("click", () => {
+        projectForm.reset();
+        projectBackdrop.classList.add("open");
+        requestAnimationFrame(() => document.getElementById("projectName").focus());
+      });
+      function closeProjectModal() { projectBackdrop.classList.remove("open"); }
+      document.getElementById("projectModalClose").addEventListener("click", closeProjectModal);
+      projectBackdrop.addEventListener("click", event => { if (event.target === projectBackdrop) closeProjectModal(); });
+      document.addEventListener("keydown", event => { if (event.key === "Escape") closeProjectModal(); });
+      projectForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const data = new FormData(projectForm);
+        const name = String(data.get("name")).trim();
+        if (!name) return;
+        if (projects.some(project => project.name.toLowerCase() === name.toLowerCase())) {
+          notify("A project with that name already exists");
+          document.getElementById("projectName").focus();
+          return;
+        }
+        const colors = ["#8c76f4", "#4ea8c7", "#e8a65a", "#e77b91", "#58a77d", "#ca78a8"];
+        projects.push({ name, category: String(data.get("category")), color: colors[(projects.length) % colors.length] });
+        render();
+        closeProjectModal();
+        notify(`${name} project created`);
+      });
+      document.getElementById("upgradeButton").addEventListener("click", () => notify("Plan options are coming soon"));
+      document.getElementById("notificationButton").addEventListener("click", () => notify("You’re all caught up!"));
+      document.getElementById("inviteButton").addEventListener("click", () => notify("Invite link copied to clipboard"));
+      document.getElementById("addMemberButton").addEventListener("click", () => notify("Team invite link copied"));
+      document.getElementById("teamDetailsButton").addEventListener("click", () => notify("You’re viewing the whole team"));
+      document.getElementById("activityButton").addEventListener("click", () => notify("You’re up to date with team activity"));
+      document.querySelectorAll("[data-footer-nav]").forEach(button => button.addEventListener("click", () => {
+        document.querySelector(`.nav-link[data-nav="${button.dataset.footerNav}"]`).click();
+        document.querySelector(".board-heading").scrollIntoView({ behavior: "smooth", block: "start" });
+      }));
+      document.getElementById("footerProjectsLink").addEventListener("click", () => {
+        selectedProject = null;
+        currentView = "Overview";
+        searchTerm = "";
+        document.getElementById("searchInput").value = "";
+        document.querySelectorAll(".nav-link").forEach(link => link.classList.toggle("active", link.dataset.nav === "Overview"));
+        document.getElementById("breadcrumbCurrent").textContent = "Overview";
+        render();
+        document.querySelector(".project-list").scrollIntoView({ behavior: "smooth", block: "center" });
+      });
+      document.getElementById("footerInviteLink").addEventListener("click", () => document.getElementById("inviteButton").click());
+      document.getElementById("backToTop").addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+      render();
+    })();
+  </script>
+</body>
+</html>
